@@ -12,23 +12,40 @@
 - ⏸️ 悬浮窗可暂停/继续，面板可拖动；点击后 5 秒冷却防连点
 - 🔄 页面刷新/翻页后脚本自动重新生效（油猴托管）
 
+## 它怎么知道「变蓝」？要不要 token？
+
+**不需要 token，也不是截图/图像识别。** 脚本由 Tampermonkey 注入到课程页面里，在你浏览器本地运行：每 **800ms** 调一次 `getComputedStyle()`，直接读取积分徽标元素的**最终渲染颜色数据**（浏览器自己就知道每个元素画成什么颜色，属于"读数据"，不是"看图猜"），所以判定是 100% 准确的。全程无网络请求、不接触账号密码。
+
+- **监视者**：Tampermonkey 注入的页面脚本（或书签版），只在你的浏览器里跑
+- **识别速度**：800ms 一轮（可改 `CFG.interval`），徽标变蓝后最迟约 0.8 秒内点击
+- **节奏**：变蓝 → 立即点击 → 冷却 5 秒防连点；每页约 60 秒的等待来自平台学习时长规则，脚本只增加不到 1 秒延迟
+
 ## 安装
 
-### 方式一：Tampermonkey 一键安装（推荐）
+### 方式一：Tampermonkey 一键安装（推荐，装一次永久生效）
 
 1. 浏览器安装 [Tampermonkey](https://www.tampermonkey.net/) 扩展
-2. 打开（仓库设为 Public 后可直接点）：
+   - Chrome/Edge 新版还需开启开发者模式：地址栏输入 `chrome://extensions` → 右上角打开「开发者模式」，否则脚本不运行
+2. 仓库为 Public 时，直接打开：
    `https://raw.githubusercontent.com/arkchan/xfks-auto-next/main/xfks-auto-next.user.js`
-   Tampermonkey 会自动弹出安装页，点「安装」即可
-3. 若仓库是 Private，先在本机克隆后手动粘贴（见方式二）
+   Tampermonkey 自动弹出安装页 → 点「安装」
+3. 打开课程页（如 `/study/course/12812`），右下角出现「xfks 自动翻页」悬浮窗即生效
 
-### 方式二：手动粘贴
+> 仓库当前是 **Private**：raw 链接需公开后才能一键装；私有状态先用「方式二」或「方式三」。
+
+### 方式二：书签版一键启动（不装任何扩展）
+
+1. 复制 `bookmarklet.txt` 的全部内容（一行 `javascript:` 开头的代码）
+2. 浏览器收藏栏右键 → 「添加网页/新建书签」，名称随便（如 `自动翻页`），网址栏粘贴刚才的内容，保存
+3. 打开课程页 → 点一下收藏栏里的「自动翻页」书签 → 右下角出现悬浮窗即在监控了
+
+> 注意：书签版在页面**整页刷新后失效**，需再点一次书签；若这个站翻页是页内切换（不刷新），点一次就够了。Tampermonkey 版没有这个问题，翻页刷新后自动重新生效。
+
+### 方式三：手动粘贴
 
 1. 安装 Tampermonkey → 点扩展图标 → 「添加新脚本」
 2. 清空模板，粘贴 `xfks-auto-next.user.js` 全部内容，`Ctrl+S` 保存
-3. 打开课程页（如 `/study/course/12812`），右下角出现「xfks 自动翻页」悬浮窗即生效
-
-> 临时试用：课程页按 `F12`，把整个脚本粘到 Console 回车（页面刷新后失效）。
+3. 打开课程页，右下角出现悬浮窗即生效
 
 ## 在别的电脑上使用
 
@@ -37,7 +54,9 @@
 git clone https://github.com/arkchan/xfks-auto-next.git
 ```
 
-然后把 `xfks-auto-next.user.js` 按上面「方式二」装进 Tampermonkey；仓库转 Public 后则可用「方式一」的 raw 链接直接安装。
+- **最省事**：把仓库转公开（`gh repo edit arkchan/xfks-auto-next --visibility public --accept-visibility-change-consequences`），新电脑只装 Tampermonkey + 点 raw 链接安装，两步搞定
+- **不想公开**：新电脑 `git clone`（需登录 GitHub）或网页打开复制脚本内容，按「方式三」粘贴安装
+- **临时用别人的电脑**：把 `bookmarklet.txt` 内容存成书签带上（存在自己浏览器书签同步里），打开课程页点一下书签即可
 
 ## 工作原理
 
